@@ -15,6 +15,8 @@ One Orderer Org
 
 Steps:
 
+### Start the network:
+
 1. Clone the repo
 2. Create artifacts
    ```sh
@@ -35,4 +37,11 @@ Steps:
 5. Deploy Chaincode
    ```sh
    ./deployChaincode.sh
+   ```
+
+## Stop the network
+
+   ```sh
+   cd ..
+   docker-compose down
    ```
