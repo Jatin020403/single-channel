@@ -13,9 +13,7 @@ One Orderer Org
     - Three Orderers
     - One Certificate Authority
 
-Steps:
-
-### Start the network:
+## Start the network:
 
 1. Clone the repo
 2. Create artifacts
