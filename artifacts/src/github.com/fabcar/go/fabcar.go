@@ -62,21 +62,13 @@ func (s *SmartContract) initLedger(APIstub shim.ChaincodeStubInterface) sc.Respo
 func (s *SmartContract) createData(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 
 	if len(args) != 2 {
-		return shim.Error("Incorrect number of arguments. Expecting 5")
+		return shim.Error("Incorrect number of arguments. Expecting 2")
 	}
 
 	var data = Data{Message: args[1], Owner: args[0]}
 
 	dataAsBytes, _ := json.Marshal(data)
 	APIstub.PutState(args[0], dataAsBytes)
-
-	indexName := "owner~key"
-	colorNameIndexKey, err := APIstub.CreateCompositeKey(indexName, []string{data.Owner, args[0]})
-	if err != nil {
-		return shim.Error(err.Error())
-	}
-	value := []byte{0x00}
-	APIstub.PutState(colorNameIndexKey, value)
 
 	return shim.Success(dataAsBytes)
 }

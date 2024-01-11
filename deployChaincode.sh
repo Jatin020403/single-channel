@@ -9,7 +9,6 @@ export PEER1_ORG2_CA=${PWD}/artifacts/channel/crypto-config/peerOrganizations/or
 export PEER0_ORG3_CA=${PWD}/artifacts/channel/crypto-config/peerOrganizations/org3.example.com/peers/peer0.org3.example.com/tls/ca.crt
 export PEER1_ORG3_CA=${PWD}/artifacts/channel/crypto-config/peerOrganizations/org3.example.com/peers/peer1.org3.example.com/tls/ca.crt
 export FABRIC_CFG_PATH=${PWD}/artifacts/channel/config/
-export PRIVATE_DATA_CONFIG=${PWD}/artifacts/private-data/collections_config.json
 
 export CHANNEL_NAME=exchange
 
@@ -145,10 +144,6 @@ queryInstalled() {
 
 # queryInstalled
 
-# --collections-config ./artifacts/private-data/collections_config.json \
-#         --signature-policy "OR('Org1MSP.member','Org2MSP.member')" \
-# --collections-config $PRIVATE_DATA_CONFIG \
-
 approveForMyOrg1() {
     setGlobalsForPeer0Org1
     setGlobalsForChaincode
@@ -156,7 +151,7 @@ approveForMyOrg1() {
     peer lifecycle chaincode approveformyorg -o localhost:7050 \
         --ordererTLSHostnameOverride orderer.example.com --tls $CORE_PEER_TLS_ENABLED \
         --cafile $ORDERER_CA --channelID $CHANNEL_NAME --name ${CC_NAME} \
-        --sequence ${VERSION} --collections-config $PRIVATE_DATA_CONFIG \
+        --sequence ${VERSION} \
         --version ${VERSION} --package-id ${PACKAGE_ID} \
         --init-required
     # set +x
@@ -193,14 +188,14 @@ approveForMyOrg2() {
 
     # peer lifecycle chaincode approveformyorg -o localhost:7050 \
     #     --ordererTLSHostnameOverride orderer.example.com --tls \
-    #     --sequence ${VERSION} --collections-config $PRIVATE_DATA_CONFIG \
+    #     --sequence ${VERSION} \
     #     --cafile $ORDERER_CA --channelID $CHANNEL_NAME --name ${CC_NAME} --version ${VERSION} \
     #     --package-id ${PACKAGE_ID} --init-required
 
     peer lifecycle chaincode approveformyorg -o localhost:7050 \
         --ordererTLSHostnameOverride orderer.example.com --tls $CORE_PEER_TLS_ENABLED \
         --cafile $ORDERER_CA --channelID $CHANNEL_NAME --name ${CC_NAME} \
-        --sequence ${VERSION} --collections-config $PRIVATE_DATA_CONFIG \
+        --sequence ${VERSION} \
         --version ${VERSION} --package-id ${PACKAGE_ID} \
         --init-required
 
@@ -215,7 +210,7 @@ approveForMyOrg3() {
     peer lifecycle chaincode approveformyorg -o localhost:7050 \
         --ordererTLSHostnameOverride orderer.example.com --tls $CORE_PEER_TLS_ENABLED \
         --cafile $ORDERER_CA --channelID $CHANNEL_NAME --name ${CC_NAME} \
-        --sequence ${VERSION} --collections-config $PRIVATE_DATA_CONFIG \
+        --sequence ${VERSION} \
         --version ${VERSION} --package-id ${PACKAGE_ID} \
         --init-required
 
@@ -229,7 +224,6 @@ approveForMyOrg3() {
 #     setGlobalsForPeer0Org1
 #     peer lifecycle chaincode checkcommitreadiness --channelID $CHANNEL_NAME \
 #         --peerAddresses localhost:7051 --tlsRootCertFiles $PEER0_ORG1_CA \
-#         --collections-config $PRIVATE_DATA_CONFIG \
 #         --name ${CC_NAME} --version ${VERSION} --sequence ${VERSION} --output json --init-required
 #     echo "===================== checking commit readyness from org 1 ===================== "
 # }
@@ -244,7 +238,6 @@ checkCommitReadyness() {
     setGlobalsForPeer0Org1
     setGlobalsForChaincode
     peer lifecycle chaincode checkcommitreadiness \
-        --collections-config $PRIVATE_DATA_CONFIG \
         --channelID $CHANNEL_NAME --name ${CC_NAME} --version ${VERSION} \
         --sequence ${VERSION} --output json --init-required
     echo "===================== checking commit readyness from IOT org 1 ===================== "
@@ -257,8 +250,7 @@ commitChaincodeDefination() {
     setGlobalsForChaincode
     peer lifecycle chaincode commit -o localhost:7050 --ordererTLSHostnameOverride orderer.example.com \
         --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA \
-        --channelID $CHANNEL_NAME --name ${CC_NAME} \
-        --collections-config $PRIVATE_DATA_CONFIG \  --peerAddresses localhost:7051 --tlsRootCertFiles $PEER0_ORG1_CA \
+        --channelID $CHANNEL_NAME --name ${CC_NAME} --peerAddresses localhost:7051 --tlsRootCertFiles $PEER0_ORG1_CA \
         --peerAddresses localhost:9051 --tlsRootCertFiles $PEER0_ORG2_CA \
         --peerAddresses localhost:11051 --tlsRootCertFiles $PEER0_ORG3_CA \
         --version ${VERSION} --sequence ${VERSION} --init-required
@@ -299,6 +291,8 @@ chaincodeInitLedger() {
     peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.example.com \
         --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n ${CC_NAME} \
         --peerAddresses localhost:7051 --tlsRootCertFiles $PEER0_ORG1_CA \
+        --peerAddresses localhost:9051 \
+        --tlsRootCertFiles $PEER0_ORG2_CA \
         -c '{"function":"initLedger","Args":[]}'
 }
 
@@ -321,9 +315,21 @@ chaincodeInvoke() {
         -C $CHANNEL_NAME -n ${CC_NAME} \
         --peerAddresses localhost:7061 \
         --tlsRootCertFiles $PEER1_ORG1_CA \
-        -c '{"function": "createData","Args":["P0O1", "Damn the torpedoes, Full speed ahead!!"]}'
+        -c '{"function": "createData","Args":["P0O1", "Damn the torpedoes, Full speed ahead!!"]}' # --peerAddresses localhost:9051 \
+    # --tlsRootCertFiles $PEER0_ORG2_CA \
 
-    ## Create Car
+    # ## Create Car
+    # setGlobalsForPeer1Org2
+    # setGlobalsForChaincode
+    # peer chaincode invoke -o localhost:7050 \
+    #     --ordererTLSHostnameOverride orderer.example.com \
+    #     --tls $CORE_PEER_TLS_ENABLED \
+    #     --cafile $ORDERER_CA \
+    #     -C $CHANNEL_NAME -n ${CC_NAME} \
+    #     --peerAddresses localhost:9061 \
+    #     --tlsRootCertFiles $PEER1_ORG2_CA \
+    #     -c '{"function": "createData","Args":["P1O2", "Either I will come back after hoisting the tricolour or I come wrapped in it!!"]}'
+
     setGlobalsForPeer1Org2
     setGlobalsForChaincode
     peer chaincode invoke -o localhost:7050 \
@@ -333,7 +339,9 @@ chaincodeInvoke() {
         -C $CHANNEL_NAME -n ${CC_NAME} \
         --peerAddresses localhost:9061 \
         --tlsRootCertFiles $PEER1_ORG2_CA \
-        -c '{"function": "createData","Args":["P1O2", "Either I will come back after hoisting the tricolour or I come wrapped in it!!"]}'
+        -c '{"function": "createData","Args":["P1O2", "NumaNuma"]}'
+    # --peerAddresses localhost:7051 \
+    # --tlsRootCertFiles $PEER0_ORG1_CA \
 }
 
 # chaincodeInvoke
@@ -371,9 +379,9 @@ commitChaincodeDefination
 queryCommitted
 chaincodeInvokeInit
 sleep 1
-# chaincodeInitLedger
+## chaincodeInitLedger
 chaincodeQuery
 sleep 1
 chaincodeInvoke
-sleep 1
+sleep 2
 chaincodeQuery
