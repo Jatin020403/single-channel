@@ -1,11 +1,11 @@
 # FabricNetwork-2.x
 
-Network Topology
+## Network Topology
 
 Three Orgs(Peer Orgs)
 
-    - Each Org have one peer(Each Endorsing Peer)
-    - Each Org have separate Certificate Authority
+    - Each Org have 2 peers 
+    - Each peer is capable of independently nedorsing a transaction
     - Each Peer has Current State database as couch db
 
 One Orderer Org
@@ -42,6 +42,6 @@ Steps:
 ## Stop the network
 
    ```sh
-   cd ..
+   cd artifacts/
    docker-compose down
    ```
